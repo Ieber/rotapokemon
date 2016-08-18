@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Pontos </title>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        height: 100%;
+        float: left;
+        width: 70%;
+        height: 100%;
+      }
+#right-panel {
+  font-family: 'Roboto','sans-serif';
+  line-height: 30px;
+  padding-left: 10px;
+}
+
+#right-panel select, #right-panel input {
+  font-size: 15px;
+}
+
+#right-panel select {
+  width: 100%;
+}
+
+#right-panel i {
+  font-size: 12px;
+}
+
+      #right-panel {
+        margin: 20px;
+        border-width: 2px;
+        width: 20%;
+        float: left;
+        text-align: left;
+        padding-top: 20px;
+      }
+      #directions-panel {
+        margin-top: 20px;
+        background-color: #FFEE77;
+        padding: 10px;
+      }
+	  
+	  
+	   html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        height: 100%;
+      }
+#floating-panel {
+  position: absolute;
+  top: 10px;
+  left: 25%;
+  z-index: 5;
+  background-color: #fff;
+  padding: 5px;
+  border: 1px solid #999;
+  text-align: center;
+  font-family: 'Roboto','sans-serif';
+  line-height: 30px;
+  padding-left: 10px;
+}
+
+      #floating-panel {
+        margin-left: -52px;
+      }
+	  
+	  .table-overflow {
+		max-height:400px;
+		overflow-y: auto;
+	  }
+    </style>
+		
+  </head>
+  
+  <body onload="drop()">
+  
+  
+	<div id="id01"></div>
+	
+    <div id="map"></div>
+	<div id="right-panel" class="table-overflow">
+      <p>Total Distance: <span id="total"></span></p>
+    </div>
+
+    <div id="right-panel">
+    <div>
+    <b>Inicio: </b>
+		<input type="text" id="start" value="Rua Bela Vista, 14, Natal, RN">
+    <br>
+    <b>Pontos: </b> <br>
+    <i>(Ctrl-Click para selecionar vários)</i> <br>
+    <select multiple id="pontos" size="15">
+    </select>
+    <br>
+    <b>Fim: </b>
+		<input type="text" id="end" value="Rua Alexandre Cavalcante, São Gonçalo do Amarante, RN">
+    <br>
+      <input type="submit" id="submit">
+    </div>
+    <div id="directions-panel"></div>
+    </div>
+
+	<script src="locais.js"></script>
+	<script>
+	
+	
+	var locais = pontos();
+	
+	
+	
+  var neighborhoods = [];
+  var len = locais.local.length, aryRepresentantes = [];
+  var pontos = document.getElementById("pontos")
+  for (var i=0; i < len; i++){
+   <!--var nome     = locais.local[i].nome; -->
+   <!--var loc = locais.local[i].loc; -->
+  
+   var opt = document.createElement('option');
+    opt.value = locais.local[i].loc[1]+","+locais.local[i].loc[0];
+    opt.innerHTML = locais.local[i].nome;
+	
+    pontos.appendChild(opt);
+	
+	var elemento = {}, neighborhoods;
+	//console.log("teste - " + locais.local[i].loc[1]+","+locais.local[i].loc[0])
+	elemento.lat = locais.local[i].loc[1];
+	elemento.lng = locais.local[i].loc[0];
+	elemento.nome = locais.local[i].nome;
+	elemento.image = locais.local[i].image;
+	
+	neighborhoods.push(elemento);
+	
+
+}    
+	
+
+	
+  
+
+var markers = [];
+var map;
+
+var directionsService = new google.maps.DirectionsService;
+  var directionsDisplay = new google.maps.DirectionsRenderer({
+    draggable: true,
+    map: map
+    //,panel: document.getElementById('right-panel')
+  });	
+	
+function initMap() {
+  
+  var directionsService = new google.maps.DirectionsService;
+  var directionsDisplay = new google.maps.DirectionsRenderer({
+    draggable: true,
+    map: map
+    ,panel: document.getElementById('right-panel')
+  });
+  map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 12,
+    center: {lat: -5.899902, lng: -35.268205}
+  });
+  directionsDisplay.setMap(map);
+
+  document.getElementById('submit').addEventListener('click', function() {
+    calculateAndDisplayRoute(directionsService, directionsDisplay);
+  });
+}
+
+function calculateAndDisplayRoute(directionsService, directionsDisplay) {
+  var waypts = [];
+  var checkboxArray = document.getElementById('pontos');
+  for (var i = 0; i < checkboxArray.length; i++) {
+    if (checkboxArray.options[i].selected) {
+      waypts.push({
+        location: checkboxArray[i].value,
+        stopover: true
+      });
+    }
+  }
+
+  directionsService.route({
+    origin: document.getElementById('start').value,
+    destination: document.getElementById('end').value,
+    waypoints: waypts,
+    optimizeWaypoints: true,
+    travelMode: google.maps.TravelMode.DRIVING
+  }, function(response, status) {
+    if (status === google.maps.DirectionsStatus.OK) {
+      directionsDisplay.setDirections(response);
+      var route = response.routes[0];
+      var summaryPanel = document.getElementById('directions-panel');
+      summaryPanel.innerHTML = '';
+      // For each route, display summary information.
+      for (var i = 0; i < route.legs.length; i++) {
+        var routeSegment = i + 1;
+        summaryPanel.innerHTML += '<b>Rota : ' + routeSegment +
+            '</b><br>';
+        summaryPanel.innerHTML += route.legs[i].start_address + ' to ';
+        summaryPanel.innerHTML += route.legs[i].end_address + '<br>';
+        summaryPanel.innerHTML += route.legs[i].distance.text + '<br><br>';
+      }
+    } else {
+      window.alert('Localidades não encontradas. - ' + status);
+    }
+  });
+}
+
+
+// If you're adding a number of markers, you may want to drop them on the map
+// consecutively rather than all at once. This example shows how to use
+// window.setTimeout() to space your markers' animation.
+
+
+
+function drop() {
+  //yolla('pokestops natal.txt');
+  clearMarkers();
+  for (var i = 0; i < neighborhoods.length; i++) {
+    addMarkerWithTimeout(neighborhoods[i], i * 1, neighborhoods[i].nome, neighborhoods[i].image);
+  }
+  //testeLeitura();
+}
+
+function addMarkerWithTimeout(position, timeout, titulo, img) {
+  var marker
+  window.setTimeout(function() {
+    markers.push(
+	marker = new google.maps.Marker({
+      position: position,
+      map: map,
+	  title: titulo,
+      animation: google.maps.Animation.DROP
+    })
+	);
+	 marker.addListener('click', function() {
+    infowindow.open(map, marker);
+  });
+	
+	
+  }, timeout);
+  
+
+    var contentString = '<div id="content">'+
+      '<p>'+ titulo + "</p><br>" +
+	  '<img src="'+ img + '" alt="Smiley face" height="300" width="300">'
+      '</div>';
+
+  var infowindow = new google.maps.InfoWindow({
+    content: contentString
+  });
+  
+}
+
+function clearMarkers() {
+  for (var i = 0; i < markers.length; i++) {
+    markers[i].setMap(null);
+  }
+  markers = [];
+}
+
+
+//teste
+function testeLeitura(){
+var xmlhttp = new XMLHttpRequest();
+var url = "pk.txt";
+
+xmlhttp.onreadystatechange = function() {
+    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        var myArr = JSON.parse(xmlhttp.responseText);
+        myFunction(myArr);
+    }
+};
+xmlhttp.open("GET", url, true);
+xmlhttp.send();
+}
+
+function myFunction(arr) {
+    var out = "";
+    var i;
+    for(i = 0; i < arr.length; i++) {
+        //out += arr[i].nome +
+        //arr[i].display + '<br>';
+		addMarkerWithTimeout(neighborhoods[i], i * 1, neighborhoods[i].nome, neighborhoods[i].image);
+    }
+    document.getElementById("id01").innerHTML = out;
+}
+
+
+//teste
+
+function showMarkersTeste() {
+
+//-5.693219, -35.296769
+//-5.899643, -35.147746
+
+        console.log("chamando show markers");
+        //var sw1 = map.getBounds()._southWest.lng;
+        //var sw2 = map.getBounds()._southWest.lat;
+        //var ne1 = map.getBounds()._northEast.lng;
+        //var ne2 = map.getBounds()._northEast.lat;
+        //var aurl = 'https://getpokestops.club/markers/'+sw1+'/'+sw2+'/'+ne1+'/'+ne2;
+		var aurl = 'https://getpokestops.club/markers/-35.296769/-5.693219/-35.147746/-5.899643';
+        $.ajax({
+            type: "GET",
+            url: aurl,
+            dataType: "json",
+            success: function (data) {
+                
+                markerClusters.clearLayers();
+
+                if (data.length !== 0) {
+
+                    $.each(data, function (marker, data) {
+
+                              console.log("teste")
+              
+                           
+                    });  
+                    map.addLayer(markerClusters);             
+
+                }
+
+            },
+            error: function (data) {
+                console.log('Please refresh the page and try again');
+            }
+        });
+
+      }
+
+
+
+
+    </script>
+	
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVbmquSVEJOKVnVPvjzG5xgZwwd56UK8Y&signed_in=true&callback=initMap"></script>
+		
+  </body>
+</html>
