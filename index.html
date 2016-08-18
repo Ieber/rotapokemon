@@ -85,18 +85,11 @@
   
   <body onload="drop()">
   
-  
-	<div id="id01"></div>
-	
-    <div id="map"></div>
-	<div id="right-panel" class="table-overflow">
-      <p>Total Distance: <span id="total"></span></p>
-    </div>
-
+	<div id="map"></div>
     <div id="right-panel">
     <div>
     <b>Inicio: </b>
-		<input type="text" id="start" value="Rua Bela Vista, 14, Natal, RN">
+		<input type="text" id="start" value="Avenida Jaguarari, 14, Natal, RN">
     <br>
     <b>Pontos: </b> <br>
     <i>(Ctrl-Click para selecionar vários)</i> <br>
@@ -104,21 +97,24 @@
     </select>
     <br>
     <b>Fim: </b>
-		<input type="text" id="end" value="Rua Alexandre Cavalcante, São Gonçalo do Amarante, RN">
+		<input type="text" id="end" value="Avenida Bernardo Vieira, 12, Natal, RN">
     <br>
       <input type="submit" id="submit">
     </div>
-    <div id="directions-panel"></div>
+	
+	<div id="id01"></div>
+	<!-- <div id="directions-panel"></div> -->
+	<div id="right-panel" class="table-overflow" size="80px">
+      <span id="total"></span>
     </div>
+    
+	</div>
 
 	<script src="locais.js"></script>
 	<script>
 	
 	
-	var locais = pontos();
-	
-	
-	
+  var locais = pontos();
   var neighborhoods = [];
   var len = locais.local.length, aryRepresentantes = [];
   var pontos = document.getElementById("pontos")
@@ -199,17 +195,17 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay) {
     if (status === google.maps.DirectionsStatus.OK) {
       directionsDisplay.setDirections(response);
       var route = response.routes[0];
-      var summaryPanel = document.getElementById('directions-panel');
-      summaryPanel.innerHTML = '';
+      //var summaryPanel = document.getElementById('directions-panel');
+      //summaryPanel.innerHTML = '';
       // For each route, display summary information.
-      for (var i = 0; i < route.legs.length; i++) {
-        var routeSegment = i + 1;
-        summaryPanel.innerHTML += '<b>Rota : ' + routeSegment +
-            '</b><br>';
-        summaryPanel.innerHTML += route.legs[i].start_address + ' to ';
-        summaryPanel.innerHTML += route.legs[i].end_address + '<br>';
-        summaryPanel.innerHTML += route.legs[i].distance.text + '<br><br>';
-      }
+      //for (var i = 0; i < route.legs.length; i++) {
+      //  var routeSegment = i + 1;
+      //  summaryPanel.innerHTML += '<b>Rota : ' + routeSegment +
+      //      '</b><br>';
+      //  summaryPanel.innerHTML += route.legs[i].start_address + ' to ';
+      //  summaryPanel.innerHTML += route.legs[i].end_address + '<br>';
+      //  summaryPanel.innerHTML += route.legs[i].distance.text + '<br><br>';
+     // }
     } else {
       window.alert('Localidades não encontradas. - ' + status);
     }
